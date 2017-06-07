@@ -2,6 +2,8 @@
 
 static Window *window;
 static TextLayer *text_layer;
+static TextLayer *time_layer;
+static GFont time_font;
 static StatusBarLayer *s_status_bar;
 
 static void init() {
@@ -9,11 +11,6 @@ static void init() {
   Layer *parent_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(parent_layer);
 
-  s_status_bar = status_bar_layer_create();
-
-  status_bar_layer_set_colors(s_status_bar, GColorBlack, GColorBlueMoon);
-  layer_add_child(window_get_root_layer(window), status_bar_layer_get_layer(s_status_bar));
-  
   text_layer = text_layer_create(bounds);
   text_layer_set_background_color(text_layer, GColorRed);
   text_layer_set_text(text_layer, "PHIIT");
@@ -24,6 +21,13 @@ static void init() {
 
   text_layer_enable_screen_text_flow_and_paging(text_layer, 30);
 
+  time_layer = text_layer_create((GRect) { .origin = { 0, 70 }, .size = { bounds.size.w -1, 50 } });
+  time_font = fonts_get_system_font (FONT_KEY_LECO_36_BOLD_NUMBERS);
+  text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
+  text_layer_set_font (time_layer, time_font);
+  text_layer_set_text (time_layer, "00:00.0");
+  layer_add_child(window_get_root_layer(window),
+       text_layer_get_layer(time_layer));
   window_stack_push(window, true);
 }
 
