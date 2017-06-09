@@ -1,16 +1,20 @@
 #include <pebble.h>
 
+
 static Window *window;
 static TextLayer *text_layer;
 static TextLayer *time_layer;
 static GFont time_font;
-static StatusBarLayer *s_status_bar;
 static bool timer_active = false;
 static double start_time = 0; 
 static uint16_t start_time_ms = 0;
 static time_t start_time_s = 0;
 static AppTimer* timer;
 static void timer_handler ();
+static bool warmup = true;
+static bool interval = false;
+static bool rest = false;
+static int count = 0;
 
 static void window_load (Window *window) {
   Layer *parent_layer = window_get_root_layer(window);
@@ -18,7 +22,7 @@ static void window_load (Window *window) {
 
   text_layer = text_layer_create(bounds);
   text_layer_set_background_color(text_layer, GColorRed);
-  text_layer_set_text(text_layer, "PHIIT");
+  text_layer_set_text(text_layer, "Warm Up");
   text_layer_set_text_alignment(text_layer, GTextAlignmentCenter);
   layer_add_child(window_get_root_layer(window),
          text_layer_get_layer(text_layer));
@@ -59,6 +63,24 @@ static void click_config_provider(void *context) {
   window_single_click_subscribe(BUTTON_ID_SELECT, select_click_handler);
 }
 
+static void sprint() {
+  interval = true;
+  count +=1;
+  text_layer_set_text (time_layer, "00:00.0");
+  static char display_time[] = "0";
+  snprintf(display_time, 8, "%1d", count);
+  text_layer_set_text(text_layer, display_time);
+  return;
+}
+
+
+static void hiit() {
+  while (count <= 7) {
+  warmup = false;
+  sprint();
+  }
+}
+
 static void update_display() {
   time_t now_s;
   int now_time_ms;
@@ -75,10 +97,22 @@ static void update_display() {
   int tenths = (int)(elapsed_time * 10) % 10;
   int seconds = (int)elapsed_time % 60;
   int minutes = (int)elapsed_time / 60 % 60; 
+  if (minutes < 1) {
   static char display_time[] = "00:00.0";
   snprintf(display_time, 8, "%02d:%02d.%1d", minutes, seconds, tenths);
   text_layer_set_text (time_layer, display_time);
+  } else {
+    hiit();
+  }
 }
+
+// static void sprint() {
+
+// }
+
+// static void rest() {
+
+// }
 
 static void timer_handler () {
   if(timer_active) {
